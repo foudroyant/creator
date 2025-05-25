@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créateur d'Images avec Titre</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .image-container {
+            transition: all 0.3s ease;
+        }
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .download-btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-indigo-700">
+            <i class="fas fa-image mr-2"></i> Créateur d'Images
+        </h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Contrôles -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800">
+                    <i class="fas fa-sliders-h mr-2 text-indigo-600"></i> Paramètres
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- Titre -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-heading mr-1"></i> Titre
+                        </label>
+                        <input type="text" id="titleInput" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                               placeholder="Entrez votre titre ici" value="Mon Super Titre">
+                    </div>
+                    
+                    <!-- Sous-titre -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-align-left mr-1"></i> Sous-titre
+                        </label>
+                        <input type="text" id="subtitleInput" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                               placeholder="Entrez votre sous-titre ici" value="Un sous-titre accrocheur">
+                    </div>
+                    
+                    <!-- Couleur de fond -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-palette mr-1"></i> Couleur de fond
+                        </label>
+                        <div class="flex space-x-2">
+                            <button data-color="gradient" class="bg-gradient-to-r from-indigo-500 to-purple-600 w-8 h-8 rounded-full border-2 border-white shadow-md"></button>
+                            <button data-color="bg-white" class="bg-white w-8 h-8 rounded-full border-2 border-gray-300"></button>
+                            <button data-color="bg-black" class="bg-black w-8 h-8 rounded-full border-2 border-white"></button>
+                            <button data-color="bg-blue-500" class="bg-blue-500 w-8 h-8 rounded-full border-2 border-white"></button>
+                            <button data-color="bg-red-500" class="bg-red-500 w-8 h-8 rounded-full border-2 border-white"></button>
+                            <input type="color" id="customColor" class="w-8 h-8 rounded-full border-2 border-gray-300 cursor-pointer">
+                        </div>
+                    </div>
+                    
+                    <!-- Couleur du texte -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-font mr-1"></i> Couleur du texte
+                        </label>
+                        <div class="flex space-x-2">
+                            <button data-text-color="text-white" class="bg-gray-800 w-8 h-8 rounded-full flex items-center justify-center">
+                                <span class="text-white text-xs">A</span>
+                            </button>
+                            <button data-text-color="text-black" class="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center">
+                                <span class="text-black text-xs">A</span>
+                            </button>
+                            <button data-text-color="text-indigo-600" class="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center">
+                                <span class="text-indigo-600 text-xs">A</span>
+                            </button>
+                            <button data-text-color="text-red-500" class="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center">
+                                <span class="text-red-500 text-xs">A</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Taille de l'image -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-expand mr-1"></i> Taille de l'image
+                        </label>
+                        <select id="sizeSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="w-full h-64">Paysage (16:9)</option>
+                            <option value="w-full h-96">Portrait (9:16)</option>
+                            <option value="w-64 h-64">Carré (1:1)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Bouton de téléchargement -->
+                    <button id="downloadBtn" class="w-full gradient-bg text-white py-3 px-6 rounded-lg font-semibold download-btn flex items-center justify-center">
+                        <i class="fas fa-download mr-2"></i> Télécharger l'image
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Prévisualisation -->
+            <div class="flex flex-col items-center">
+                <div class="bg-white rounded-xl shadow-lg p-6 w-full mb-6">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                        <i class="fas fa-eye mr-2 text-indigo-600"></i> Prévisualisation
+                    </h2>
+                    <div class="flex justify-center">
+                        <div id="imagePreview" class="image-container gradient-bg w-full h-64 rounded-lg shadow-md flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                            <h1 id="previewTitle" class="text-4xl font-bold text-white text-center text-shadow mb-2">Mon Super Titre</h1>
+                            <p id="previewSubtitle" class="text-xl text-white text-center text-shadow">Un sous-titre accrocheur</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 w-full">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                        <i class="fas fa-info-circle mr-2 text-indigo-600"></i> Instructions
+                    </h2>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                        <li>Personnalisez votre image avec le titre et sous-titre</li>
+                        <li>Choisissez la couleur de fond et du texte</li>
+                        <li>Sélectionnez la taille de l'image</li>
+                        <li>Cliquez sur "Télécharger l'image" pour sauvegarder</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Éléments DOM
+            const titleInput = document.getElementById('titleInput');
+            const subtitleInput = document.getElementById('subtitleInput');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewSubtitle = document.getElementById('previewSubtitle');
+            const imagePreview = document.getElementById('imagePreview');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const sizeSelect = document.getElementById('sizeSelect');
+            const customColor = document.getElementById('customColor');
+            
+            // Mise à jour en temps réel
+            titleInput.addEventListener('input', updatePreview);
+            subtitleInput.addEventListener('input', updatePreview);
+            sizeSelect.addEventListener('change', updateSize);
+            customColor.addEventListener('input', updateCustomColor);
+            
+            // Boutons de couleur de fond
+            document.querySelectorAll('[data-color]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const colorClass = this.getAttribute('data-color');
+                    // Supprimer toutes les classes de couleur existantes
+                    imagePreview.className = imagePreview.className.replace(/\bbg-\S+/g, '');
+                    imagePreview.className = imagePreview.className.replace(/\bgradient-bg\b/g, '');
+                    
+                    if (colorClass === 'gradient') {
+                        imagePreview.classList.add('gradient-bg');
+                    } else {
+                        imagePreview.classList.add(colorClass);
+                    }
+                });
+            });
+            
+            // Boutons de couleur de texte
+            document.querySelectorAll('[data-text-color]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const textColorClass = this.getAttribute('data-text-color');
+                    // Mettre à jour la couleur du texte pour le titre et le sous-titre
+                    previewTitle.className = previewTitle.className.replace(/\btext-\S+/g, '');
+                    previewSubtitle.className = previewSubtitle.className.replace(/\btext-\S+/g, '');
+                    
+                    previewTitle.classList.add(textColorClass, 'text-shadow');
+                    previewSubtitle.classList.add(textColorClass, 'text-shadow');
+                });
+            });
+            
+            // Téléchargement de l'image
+            downloadBtn.addEventListener('click', function() {
+                // Ajouter un effet de chargement
+                const originalText = downloadBtn.innerHTML;
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Génération en cours...';
+                downloadBtn.disabled = true;
+                
+                // Utiliser html2canvas pour capturer l'image
+                html2canvas(imagePreview, {
+                    scale: 2, // Augmenter la qualité
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true
+                }).then(canvas => {
+                    // Créer un lien de téléchargement
+                    const link = document.createElement('a');
+                    link.download = 'image-personnalisee.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    // Restaurer le bouton
+                    downloadBtn.innerHTML = originalText;
+                    downloadBtn.disabled = false;
+                }).catch(err => {
+                    console.error('Erreur lors de la génération de l\'image:', err);
+                    downloadBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Erreur';
+                    setTimeout(() => {
+                        downloadBtn.innerHTML = originalText;
+                        downloadBtn.disabled = false;
+                    }, 2000);
+                });
+            });
+            
+            // Fonctions utilitaires
+            function updatePreview() {
+                previewTitle.textContent = titleInput.value;
+                previewSubtitle.textContent = subtitleInput.value;
+            }
+            
+            function updateSize() {
+                const sizeClass = sizeSelect.value;
+                // Supprimer les classes de taille existantes
+                imagePreview.className = imagePreview.className.replace(/\bw-\S+/g, '');
+                imagePreview.className = imagePreview.className.replace(/\bh-\S+/g, '');
+                
+                // Ajouter les nouvelles classes de taille
+                const [widthClass, heightClass] = sizeClass.split(' ');
+                imagePreview.classList.add(widthClass, heightClass);
+            }
+            
+            function updateCustomColor() {
+                // Supprimer toutes les classes de couleur existantes
+                imagePreview.className = imagePreview.className.replace(/\bbg-\S+/g, '');
+                imagePreview.className = imagePreview.className.replace(/\bgradient-bg\b/g, '');
+                
+                // Appliquer la couleur personnalisée
+                imagePreview.style.backgroundColor = customColor.value;
+            }
+        });
+    </script>
+</body>
+</html>

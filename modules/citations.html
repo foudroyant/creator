@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Citations pour Réseaux Sociaux</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .quote-container {
+            transition: all 0.3s ease;
+            min-height: 400px;
+        }
+        .text-shadow {
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        .gradient-bg-1 {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .gradient-bg-2 {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+        }
+        .gradient-bg-3 {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+        }
+        .quote-mark {
+            font-size: 5rem;
+            opacity: 0.2;
+            line-height: 1;
+        }
+        .download-btn {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+        .social-icon {
+            transition: all 0.3s ease;
+        }
+        .social-icon:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8 text-indigo-700">
+            <i class="fas fa-quote-left mr-2"></i> Générateur de Citations
+        </h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Contrôles -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-800">
+                    <i class="fas fa-sliders-h mr-2 text-indigo-600"></i> Personnalisation
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- Citation -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-quote-right mr-1"></i> Citation
+                        </label>
+                        <textarea id="quoteInput" rows="3"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                               placeholder="Entrez votre citation ici">La vie est un mystère à vivre, pas un problème à résoudre.</textarea>
+                    </div>
+                    
+                    <!-- Auteur -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-user mr-1"></i> Auteur
+                        </label>
+                        <input type="text" id="authorInput" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                               placeholder="Nom de l'auteur" value="Gandhi">
+                    </div>
+                    
+                    <!-- Style de citation -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-paint-brush mr-1"></i> Style de citation
+                        </label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button data-style="style1" class="bg-gradient-to-r from-gray-100 to-gray-200 p-2 rounded-lg border border-gray-300">
+                                <div class="h-4 bg-gray-400 mb-1 rounded"></div>
+                                <div class="h-4 bg-gray-500 rounded w-3/4 mx-auto"></div>
+                            </button>
+                            <button data-style="style2" class="bg-gradient-to-r from-blue-100 to-blue-200 p-2 rounded-lg border border-gray-300">
+                                <div class="h-4 bg-blue-400 mb-1 rounded"></div>
+                                <div class="h-4 bg-blue-500 rounded w-3/4 mx-auto"></div>
+                            </button>
+                            <button data-style="style3" class="bg-gradient-to-r from-red-100 to-red-200 p-2 rounded-lg border border-gray-300">
+                                <div class="h-4 bg-red-400 mb-1 rounded"></div>
+                                <div class="h-4 bg-red-500 rounded w-3/4 mx-auto"></div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Format pour réseaux sociaux -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-share-alt mr-1"></i> Format pour réseaux
+                        </label>
+                        <div class="flex space-x-4">
+                            <button data-format="instagram" class="social-icon bg-gradient-to-br from-purple-500 to-pink-500 text-white p-3 rounded-full">
+                                <i class="fab fa-instagram text-xl"></i>
+                            </button>
+                            <button data-format="twitter" class="social-icon bg-blue-400 text-white p-3 rounded-full">
+                                <i class="fab fa-twitter text-xl"></i>
+                            </button>
+                            <button data-format="facebook" class="social-icon bg-blue-600 text-white p-3 rounded-full">
+                                <i class="fab fa-facebook-f text-xl"></i>
+                            </button>
+                            <button data-format="pinterest" class="social-icon bg-red-600 text-white p-3 rounded-full">
+                                <i class="fab fa-pinterest-p text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Bouton de téléchargement -->
+                    <button id="downloadBtn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold download-btn flex items-center justify-center">
+                        <i class="fas fa-download mr-2"></i> Télécharger la citation
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Prévisualisation -->
+            <div class="flex flex-col items-center">
+                <div class="bg-white rounded-xl shadow-lg p-6 w-full mb-6">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                        <i class="fas fa-eye mr-2 text-indigo-600"></i> Prévisualisation
+                    </h2>
+                    <div class="flex justify-center">
+                        <div id="quotePreview" class="quote-container gradient-bg-1 w-full rounded-xl shadow-md flex flex-col items-center justify-center p-8 relative overflow-hidden">
+                            <div class="absolute top-4 left-6 text-gray-600 quote-mark">
+                                <i class="fas fa-quote-left"></i>
+                            </div>
+                            <p id="previewQuote" class="text-2xl md:text-3xl text-center text-gray-800 font-medium mb-6 px-8 leading-relaxed">
+                                La vie est un mystère à vivre, pas un problème à résoudre.
+                            </p>
+                            <p id="previewAuthor" class="text-xl text-gray-600 italic mt-4">
+                                — Gandhi
+                            </p>
+                            <div class="absolute bottom-4 right-6 text-gray-600 quote-mark">
+                                <i class="fas fa-quote-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 w-full">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+                        <i class="fas fa-lightbulb mr-2 text-indigo-600"></i> Conseils
+                    </h2>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                        <li>Les citations courtes (moins de 120 caractères) fonctionnent mieux sur Twitter</li>
+                        <li>Ajoutez des hashtags pertinents pour augmenter la portée</li>
+                        <li>Les images carrées (1:1) sont idéales pour Instagram</li>
+                        <li>Utilisez des couleurs contrastées pour une meilleure lisibilité</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Éléments DOM
+            const quoteInput = document.getElementById('quoteInput');
+            const authorInput = document.getElementById('authorInput');
+            const previewQuote = document.getElementById('previewQuote');
+            const previewAuthor = document.getElementById('previewAuthor');
+            const quotePreview = document.getElementById('quotePreview');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            // Mise à jour en temps réel
+            quoteInput.addEventListener('input', updatePreview);
+            authorInput.addEventListener('input', updatePreview);
+            
+            // Styles de citation
+            document.querySelectorAll('[data-style]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const style = this.getAttribute('data-style');
+                    
+                    // Réinitialiser les classes
+                    quotePreview.className = quotePreview.className.replace(/\bgradient-bg-\d\b/g, '');
+                    previewQuote.className = previewQuote.className.replace(/\btext-\S+/g, '');
+                    previewAuthor.className = previewAuthor.className.replace(/\btext-\S+/g, '');
+                    
+                    // Appliquer le style sélectionné
+                    switch(style) {
+                        case 'style1':
+                            quotePreview.classList.add('gradient-bg-1');
+                            previewQuote.classList.add('text-gray-800');
+                            previewAuthor.classList.add('text-gray-600');
+                            break;
+                        case 'style2':
+                            quotePreview.classList.add('gradient-bg-2');
+                            previewQuote.classList.add('text-blue-900');
+                            previewAuthor.classList.add('text-blue-700');
+                            break;
+                        case 'style3':
+                            quotePreview.classList.add('gradient-bg-3');
+                            previewQuote.classList.add('text-red-900');
+                            previewAuthor.classList.add('text-red-700');
+                            break;
+                    }
+                });
+            });
+            
+            // Formats pour réseaux sociaux
+            document.querySelectorAll('[data-format]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const format = this.getAttribute('data-format');
+                    
+                    // Réinitialiser la taille
+                    quotePreview.className = quotePreview.className.replace(/\bw-\S+ h-\S+\b/g, '');
+                    
+                    // Appliquer le format
+                    switch(format) {
+                        case 'instagram':
+                            quotePreview.classList.add('w-full', 'h-96'); // Carré
+                            break;
+                        case 'twitter':
+                            quotePreview.classList.add('w-full', 'h-64'); // Paysage
+                            break;
+                        case 'facebook':
+                            quotePreview.classList.add('w-full', 'h-96'); // Carré
+                            break;
+                        case 'pinterest':
+                            quotePreview.classList.add('w-full', 'h-[28rem]'); // Portrait
+                            break;
+                    }
+                });
+            });
+            
+            // Téléchargement de l'image
+            downloadBtn.addEventListener('click', function() {
+                // Ajouter un effet de chargement
+                const originalText = downloadBtn.innerHTML;
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Génération en cours...';
+                downloadBtn.disabled = true;
+                
+                // Utiliser html2canvas pour capturer l'image
+                html2canvas(quotePreview, {
+                    scale: 2, // Augmenter la qualité
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null // Fond transparent
+                }).then(canvas => {
+                    // Créer un lien de téléchargement
+                    const link = document.createElement('a');
+                    link.download = 'citation-reseaux-sociaux.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    // Restaurer le bouton
+                    downloadBtn.innerHTML = originalText;
+                    downloadBtn.disabled = false;
+                }).catch(err => {
+                    console.error('Erreur lors de la génération de l\'image:', err);
+                    downloadBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Erreur';
+                    setTimeout(() => {
+                        downloadBtn.innerHTML = originalText;
+                        downloadBtn.disabled = false;
+                    }, 2000);
+                });
+            });
+            
+            // Fonction de mise à jour de la prévisualisation
+            function updatePreview() {
+                previewQuote.textContent = quoteInput.value;
+                previewAuthor.textContent = `— ${authorInput.value}`;
+            }
+        });
+    </script>
+</body>
+</html>

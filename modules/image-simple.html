@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'images à partir de texte</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .text-preview {
+            min-height: 200px;
+            transition: all 0.3s ease;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        .download-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .theme-toggle {
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+        
+        .color-picker {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        
+        .color-picker:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-picker::-webkit-color-swatch {
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        
+        .color-picker::-moz-color-swatch {
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
+                <i class="fas fa-image mr-2"></i>Texte en Image
+            </h1>
+            <button id="themeToggle" class="theme-toggle p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:inline"></i>
+            </button>
+        </header>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Input Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                    <i class="fas fa-edit mr-2"></i>Votre texte
+                </h2>
+                
+                <textarea id="textInput" class="w-full h-64 p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all" placeholder="Écrivez votre texte ici..."></textarea>
+                
+                <div class="mt-4 flex flex-wrap gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Couleur du texte</label>
+                        <input type="color" id="textColor" value="#ffffff" class="color-picker">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Couleur de fond</label>
+                        <input type="color" id="bgColor" value="#4f46e5" class="color-picker">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Taille du texte</label>
+                        <select id="fontSize" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white">
+                            <option value="16px">Petit</option>
+                            <option value="24px" selected>Moyen</option>
+                            <option value="32px">Grand</option>
+                            <option value="48px">Très grand</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="addShadow" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600">
+                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Ajouter une ombre au texte</span>
+                    </label>
+                </div>
+                
+                <button id="generateBtn" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-camera mr-2"></i>Générer l'image
+                </button>
+            </div>
+            
+            <!-- Preview Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in" style="animation-delay: 0.1s">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
+                        <i class="fas fa-eye mr-2"></i>Aperçu
+                    </h2>
+                    <span id="imageSize" class="text-sm text-gray-500 dark:text-gray-400">0 KB</span>
+                </div>
+                
+                <div id="previewContainer" class="relative">
+                    <div id="textPreview" class="text-preview p-6 rounded-lg flex items-center justify-center text-center" style="background-color: #4f46e5; color: white; font-size: 24px;">
+                        Votre image apparaîtra ici
+                    </div>
+                    
+                    <div id="downloadSection" class="mt-4 hidden">
+                        <button id="downloadBtn" class="download-btn w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-download mr-2"></i>Télécharger l'image
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <p><i class="fas fa-info-circle mr-1"></i> L'image sera générée en haute résolution</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 dark:text-gray-400 text-sm">
+            <p>Créé avec <i class="fas fa-heart text-red-500"></i> - Texte en Image © 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+        
+        // Preview update
+        const textInput = document.getElementById('textInput');
+        const textPreview = document.getElementById('textPreview');
+        const textColor = document.getElementById('textColor');
+        const bgColor = document.getElementById('bgColor');
+        const fontSize = document.getElementById('fontSize');
+        const addShadow = document.getElementById('addShadow');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadSection = document.getElementById('downloadSection');
+        const imageSize = document.getElementById('imageSize');
+        
+        function updatePreview() {
+            textPreview.textContent = textInput.value || 'Votre image apparaîtra ici';
+            textPreview.style.color = textColor.value;
+            textPreview.style.backgroundColor = bgColor.value;
+            textPreview.style.fontSize = fontSize.value;
+            
+            if (addShadow.checked) {
+                textPreview.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
+            } else {
+                textPreview.style.textShadow = 'none';
+            }
+        }
+        
+        textInput.addEventListener('input', updatePreview);
+        textColor.addEventListener('input', updatePreview);
+        bgColor.addEventListener('input', updatePreview);
+        fontSize.addEventListener('change', updatePreview);
+        addShadow.addEventListener('change', updatePreview);
+        
+        // Generate image
+        generateBtn.addEventListener('click', () => {
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Génération...';
+            generateBtn.disabled = true;
+            
+            // Add slight delay to allow UI to update
+            setTimeout(() => {
+                html2canvas(textPreview, {
+                    scale: 2, // Higher quality
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true
+                }).then(canvas => {
+                    // Update download button
+                    const dataUrl = canvas.toDataURL('image/png');
+                    downloadBtn.onclick = () => {
+                        const link = document.createElement('a');
+                        link.download = 'texte-en-image.png';
+                        link.href = dataUrl;
+                        link.click();
+                    };
+                    
+                    // Calculate image size
+                    const sizeInBytes = dataUrl.length * 0.75; // Approximate
+                    const sizeInKB = Math.round(sizeInBytes / 1024);
+                    imageSize.textContent = `${sizeInKB} KB`;
+                    
+                    // Show download button
+                    downloadSection.classList.remove('hidden');
+                    
+                    // Update preview with the actual image
+                    textPreview.innerHTML = '';
+                    textPreview.appendChild(canvas);
+                    textPreview.style.padding = '0';
+                    
+                    generateBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Image générée!';
+                    setTimeout(() => {
+                        generateBtn.innerHTML = '<i class="fas fa-camera mr-2"></i> Régénérer l\'image';
+                        generateBtn.disabled = false;
+                    }, 1500);
+                }).catch(err => {
+                    console.error('Erreur lors de la génération:', err);
+                    textPreview.innerHTML = '<p class="text-red-500">Erreur lors de la génération de l\'image</p>';
+                    generateBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Erreur';
+                    generateBtn.disabled = false;
+                });
+            }, 100);
+        });
+        
+        // Initial preview update
+        updatePreview();
+    </script>
+</body>
+</html>

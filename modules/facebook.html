@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Post Facebook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .post-preview {
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .theme-toggle {
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+        
+        .color-picker {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        
+        .color-picker:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-picker::-webkit-color-swatch {
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        
+        .color-picker::-moz-color-swatch {
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        
+        #postImage {
+            max-height: 300px;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        .custom-file-upload {
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            background-color: #f3f4f6;
+            border-radius: 4px;
+            border: 1px dashed #d1d5db;
+            transition: all 0.3s;
+        }
+        
+        .custom-file-upload:hover {
+            background-color: #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
+                <i class="fas fa-share-alt mr-2"></i>Générateur de Post
+            </h1>
+            <button id="themeToggle" class="theme-toggle p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:inline"></i>
+            </button>
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Input Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                    <i class="fas fa-cog mr-2"></i>Personnalisation
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- User Info -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-2">
+                            <i class="fas fa-user-circle mr-2"></i>Informations du profil
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom</label>
+                                <input id="userName" type="text" value="Stéphane Bamby" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Photo de profil</label>
+                                <label for="profilePic" class="custom-file-upload">
+                                    <i class="fas fa-upload mr-1"></i>Choisir une image
+                                </label>
+                                <input id="profilePic" type="file" accept="image/*" class="hidden">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Post Content -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-2">
+                            <i class="fas fa-edit mr-2"></i>Contenu du post
+                        </h3>
+                        <textarea id="postContent" class="w-full h-32 p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all" placeholder="Que voulez-vous partager ?">Hello world</textarea>
+                    </div>
+                    
+                    <!-- Post Image -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-2">
+                            <i class="fas fa-image mr-2"></i>Image du post
+                        </h3>
+                        <label for="postImageUpload" class="custom-file-upload">
+                            <i class="fas fa-upload mr-1"></i>Choisir une image
+                        </label>
+                        <input id="postImageUpload" type="file" accept="image/*" class="hidden">
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-2">
+                            <i class="fas fa-chart-bar mr-2"></i>Statistiques
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Réactions</label>
+                                <input id="reactionsCount" type="number" value="42" min="0" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Commentaires</label>
+                                <input id="commentsCount" type="number" value="12" min="0" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Partages</label>
+                                <input id="sharesCount" type="number" value="3" min="0" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Style Options -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-2">
+                            <i class="fas fa-palette mr-2"></i>Options de style
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Couleur de fond</label>
+                                <input type="color" id="postBgColor" value="#ffffff" class="color-picker">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Couleur du texte</label>
+                                <input type="color" id="postTextColor" value="#000000" class="color-picker">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="generateBtn" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-camera mr-2"></i>Générer l'image
+                </button>
+            </div>
+            
+            <!-- Preview Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in" style="animation-delay: 0.1s">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
+                        <i class="fas fa-eye mr-2"></i>Aperçu
+                    </h2>
+                    <span id="imageSize" class="text-sm text-gray-500 dark:text-gray-400">0 KB</span>
+                </div>
+                
+                <div id="previewContainer" class="relative">
+                    <!-- Post Template -->
+                    <div id="capture" class="post-preview max-w-lg mx-auto bg-white rounded-lg shadow-md overflow-hidden" style="background-color: #ffffff;">
+                        <!-- Header -->
+                        <div class="flex items-center p-4">
+                            <img id="previewProfilePic" class="h-10 w-10 rounded-full" src="/images/user-picture.png" alt="Profil">
+                            <div class="ml-3">
+                                <p id="previewUserName" class="font-semibold" style="color: #000000;">Stéphane Bamby</p>
+                                <p class="text-xs" style="color: #65676B;">Maintenant · <span>🌍</span></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="px-4 pb-3">
+                            <p id="previewPostContent" style="color: #000000;">Hello world</p>
+                        </div>
+                        
+                        <!-- Image -->
+                        <img id="previewPostImage" class="w-full" src="https://via.placeholder.com/600x400" alt="Image du post" style="display: none;">
+                        
+                        <!-- Stats -->
+                        <div class="flex justify-between px-4 py-2 text-sm border-b" style="color: #65676B; border-color: #e4e6eb;">
+                            <div class="flex items-center">
+                                <div class="flex">
+                                    <div class="w-5 h-5 rounded-full bg-blue-500 border-2 border-white"></div>
+                                    <div class="w-5 h-5 rounded-full bg-red-500 border-2 border-white -ml-1"></div>
+                                </div>
+                                <span id="previewReactions" class="ml-1">42</span>
+                            </div>
+                            <div>
+                                <span id="previewComments">12</span> commentaires · 
+                                <span id="previewShares">3</span> partages
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="flex justify-around p-2" style="color: #65676B;">
+                            <button class="flex items-center px-4 py-2 hover:bg-gray-100 rounded-lg">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5">
+                                    </path>
+                                </svg>
+                                J'aime
+                            </button>
+                            <button class="flex items-center px-4 py-2 hover:bg-gray-100 rounded-lg">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                                    </path>
+                                </svg>
+                                Commenter
+                            </button>
+                            <button class="flex items-center px-4 py-2 hover:bg-gray-100 rounded-lg">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
+                                    </path>
+                                </svg>
+                                Partager
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="downloadSection" class="mt-6 hidden">
+                        <button id="downloadBtn" class="download-btn w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-download mr-2"></i>Télécharger l'image
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <p><i class="fas fa-info-circle mr-1"></i> L'image sera générée en haute résolution</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-500 dark:text-gray-400 text-sm">
+            <p>Créé avec <i class="fas fa-heart text-red-500"></i> - Générateur de Post © 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+        
+        // DOM Elements
+        const userName = document.getElementById('userName');
+        const profilePic = document.getElementById('profilePic');
+        const postContent = document.getElementById('postContent');
+        const postImageUpload = document.getElementById('postImageUpload');
+        const reactionsCount = document.getElementById('reactionsCount');
+        const commentsCount = document.getElementById('commentsCount');
+        const sharesCount = document.getElementById('sharesCount');
+        const postBgColor = document.getElementById('postBgColor');
+        const postTextColor = document.getElementById('postTextColor');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadSection = document.getElementById('downloadSection');
+        const imageSize = document.getElementById('imageSize');
+        
+        // Preview Elements
+        const previewUserName = document.getElementById('previewUserName');
+        const previewProfilePic = document.getElementById('previewProfilePic');
+        const previewPostContent = document.getElementById('previewPostContent');
+        const previewPostImage = document.getElementById('previewPostImage');
+        const previewReactions = document.getElementById('previewReactions');
+        const previewComments = document.getElementById('previewComments');
+        const previewShares = document.getElementById('previewShares');
+        const capture = document.getElementById('capture');
+        
+        // Update preview when inputs change
+        function updatePreview() {
+            // User info
+            previewUserName.textContent = userName.value;
+            previewUserName.style.color = postTextColor.value;
+            
+            // Post content
+            previewPostContent.textContent = postContent.value;
+            previewPostContent.style.color = postTextColor.value;
+            
+            // Stats
+            previewReactions.textContent = reactionsCount.value;
+            previewComments.textContent = commentsCount.value;
+            previewShares.textContent = sharesCount.value;
+            
+            // Background color
+            capture.style.backgroundColor = postBgColor.value;
+            
+            // Text colors
+            document.querySelectorAll('#capture p, #capture span, #capture div').forEach(el => {
+                if (!el.classList.contains('no-color-change')) {
+                    el.style.color = postTextColor.value;
+                }
+            });
+        }
+        
+        // Event listeners for inputs
+        userName.addEventListener('input', updatePreview);
+        postContent.addEventListener('input', updatePreview);
+        reactionsCount.addEventListener('input', updatePreview);
+        commentsCount.addEventListener('input', updatePreview);
+        sharesCount.addEventListener('input', updatePreview);
+        postBgColor.addEventListener('input', updatePreview);
+        postTextColor.addEventListener('input', updatePreview);
+        
+        // Handle profile picture upload
+        profilePic.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewProfilePic.src = event.target.result;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+        
+        // Handle post image upload
+        postImageUpload.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewPostImage.src = event.target.result;
+                    previewPostImage.style.display = 'block';
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            } else {
+                previewPostImage.style.display = 'none';
+            }
+        });
+        
+        // Generate image
+        generateBtn.addEventListener('click', () => {
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Génération...';
+            generateBtn.disabled = true;
+            
+            // Add slight delay to allow UI to update
+            setTimeout(() => {
+                html2canvas(capture, {
+                    scale: 2, // Higher quality
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: postBgColor.value
+                }).then(canvas => {
+                    // Update download button
+                    const dataUrl = canvas.toDataURL('image/png');
+                    downloadBtn.onclick = () => {
+                        const link = document.createElement('a');
+                        link.download = 'post-social.png';
+                        link.href = dataUrl;
+                        link.click();
+                    };
+                    
+                    // Calculate image size
+                    const sizeInBytes = dataUrl.length * 0.75; // Approximate
+                    const sizeInKB = Math.round(sizeInBytes / 1024);
+                    imageSize.textContent = `${sizeInKB} KB`;
+                    
+                    // Show download button
+                    downloadSection.classList.remove('hidden');
+                    
+                    generateBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Image générée!';
+                    setTimeout(() => {
+                        generateBtn.innerHTML = '<i class="fas fa-camera mr-2"></i> Régénérer l\'image';
+                        generateBtn.disabled = false;
+                    }, 1500);
+                }).catch(err => {
+                    console.error('Erreur lors de la génération:', err);
+                    generateBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Erreur';
+                    generateBtn.disabled = false;
+                });
+            }, 100);
+        });
+        
+        // Initial preview update
+        updatePreview();
+    </script>
+</body>
+</html>
