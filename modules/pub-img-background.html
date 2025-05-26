@@ -228,7 +228,7 @@
                     <!-- Social Post Template -->
                     <div id="capture" class="social-post bg-gray-200 rounded-lg shadow-md overflow-hidden mb-6">
                         <!-- Background Image -->
-                        <img id="previewBackground" src="./images/blanc.webp" alt="Background" class="absolute inset-0 w-full h-full object-cover">
+                        <img id="previewBackground" src="../images/blanc.webp" alt="Background" class="absolute inset-0 w-full h-full object-cover">
                         
                         <!-- Overlay with content -->
                         <div class="post-overlay">
@@ -358,7 +358,7 @@
         
         // Remove background image
         removeBackground.addEventListener('click', function() {
-            previewBackground.src = '';
+            previewBackground.src = '../images/blanc.webp';
             backgroundImage.value = '';
             imageDimensions.textContent = '500×500';
         });
