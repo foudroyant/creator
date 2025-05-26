@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créateur de Posts Personnalisés</title>
+    <link rel="shortcut icon" href="/images//bambyno.PNG" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .social-post { width: 500px; height: 500px; position: relative; }
+        .profile-img { width: 50px; height: 50px; object-fit: cover; }
+        
+        .color-picker {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .color-picker:hover { transform: scale(1.1); }
+        .color-picker::-webkit-color-swatch { border-radius: 8px; border: 2px solid rgba(255,255,255,0.5); }
+        .color-picker::-moz-color-swatch { border-radius: 8px; border: 2px solid rgba(255,255,255,0.5); }
+        
+        .custom-file-upload {
+            display: inline-block;
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            border: 1px dashed #d1d5db;
+            transition: all 0.3s;
+        }
+        
+        .custom-file-upload:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #10b981, #059669);
+            transition: all 0.3s;
+        }
+        
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        #previewPostContent {
+            word-break: break-word;
+            overflow-wrap: break-word;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        .post-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .user-info {
+            background-color: rgba(0,0,0,0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
+                <i class="fas fa-image mr-2 text-blue-500"></i>Créateur de Posts
+            </h1>
+            <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:inline"></i>
+            </button>
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Configuration Panel -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-6 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    <i class="fas fa-sliders-h mr-2 text-blue-500"></i>Configuration
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- Image Section -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                            <i class="fas fa-image mr-2 text-blue-500"></i>Image de fond
+                        </h3>
+                        <div>
+                            <label for="backgroundImage" class="custom-file-upload block text-center">
+                                <i class="fas fa-upload mr-2"></i>Choisir une image
+                            </label>
+                            <input id="backgroundImage" type="file" accept="image/*" class="hidden">
+                            <div class="mt-2 flex justify-between">
+                                <button id="removeBackground" class="text-sm text-red-500 hover:text-red-700">
+                                    <i class="fas fa-times mr-1"></i>Supprimer
+                                </button>
+                                <button id="darkenBtn" class="text-sm text-blue-500 hover:text-blue-700">
+                                    <i class="fas fa-moon mr-1"></i>Assombrir
+                                </button>
+                                <button id="brightenBtn" class="text-sm text-yellow-500 hover:text-yellow-700">
+                                    <i class="fas fa-sun mr-1"></i>Éclaircir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Section -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                            <i class="fas fa-user-circle mr-2 text-blue-500"></i>Informations utilisateur
+                        </h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom d'utilisateur</label>
+                                <input id="userName" type="text" value="Jean Dupont" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Détails</label>
+                                <input id="accountDetails" type="text" value="@jeandupont · 2h" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Section -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                            <i class="fas fa-align-left mr-2 text-blue-500"></i>Contenu
+                        </h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Texte de la publication</label>
+                            <textarea id="postContent" class="w-full h-32 p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white transition-all" placeholder="Écrivez votre message ici...">Découvrez ce magnifique paysage ! 🌄 #nature #voyage</textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Text Options -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                            <i class="fas fa-font mr-2 text-blue-500"></i>Options de texte
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Taille du texte</label>
+                                <select id="textSize" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="text-sm">Petit</option>
+                                    <option value="text-base" selected>Normal</option>
+                                    <option value="text-lg">Grand</option>
+                                    <option value="text-xl">Très grand</option>
+                                    <option value="text-2xl">Énorme</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Couleur du texte</label>
+                                <input type="color" id="textColor" value="#ffffff" class="color-picker">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Style du texte</label>
+                            <div class="flex space-x-4">
+                                <button id="boldBtn" class="p-2 border rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    <i class="fas fa-bold"></i>
+                                </button>
+                                <button id="italicBtn" class="p-2 border rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    <i class="fas fa-italic"></i>
+                                </button>
+                                <button id="underlineBtn" class="p-2 border rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    <i class="fas fa-underline"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="generateBtn" class="btn-primary w-full text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-magic mr-2"></i>Générer l'image
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Preview Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in" style="animation-delay: 0.1s">
+                <div class="flex justify-between items-center mb-6 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
+                        <i class="fas fa-eye mr-2 text-blue-500"></i>Aperçu
+                    </h2>
+                    <div class="flex items-center space-x-2">
+                        <span id="imageSize" class="text-sm text-gray-500 dark:text-gray-400">0 KB</span>
+                        <span id="imageDimensions" class="text-sm text-gray-500 dark:text-gray-400">500×500</span>
+                    </div>
+                </div>
+                
+                <div id="previewContainer" class="flex flex-col items-center">
+                    <!-- Social Post Template -->
+                    <div id="capture" class="social-post bg-gray-200 rounded-lg shadow-md overflow-hidden mb-6">
+                        <!-- Background Image -->
+                        <img id="previewBackground" src="./images/blanc.webp" alt="Background" class="absolute inset-0 w-full h-full object-cover">
+                        
+                        <!-- Overlay with content -->
+                        <div class="post-overlay">
+                            <!-- User Info -->
+                            <div class="user-info text-white mb-4">
+                                <p id="previewUserName" class="font-semibold inline">Prophète Kacou Philippe</p>
+                                <span class="mx-2">•</span>
+                                <p id="previewAccountDetails" class="text-xs inline">Message de Matthieu 25:6</p>
+                            </div>
+                            
+                            <!-- Content -->
+                            <p id="previewPostContent" class="text-white text-center text-base font-normal">
+                                Le chemin du moksha ou du paradis éternel n'est pas celui de l'intelligence humaine ou des méditations mais celui de la révélation prophétique de Dieu Lui-même qui révèle sa parfaite volonté à qui Il veut.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div id="downloadSection" class="w-full max-w-md hidden">
+                        <button id="downloadBtn" class="btn-download w-full text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-download mr-2"></i>Télécharger l'image
+                        </button>
+                        <div class="text-center text-sm text-gray-500 dark:text-gray-400">
+                            <p><i class="fas fa-info-circle mr-1"></i> L'image sera générée en haute résolution (1000×1000)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+        
+        // DOM Elements
+        const userName = document.getElementById('userName');
+        const accountDetails = document.getElementById('accountDetails');
+        const backgroundImage = document.getElementById('backgroundImage');
+        const removeBackground = document.getElementById('removeBackground');
+        const darkenBtn = document.getElementById('darkenBtn');
+        const brightenBtn = document.getElementById('brightenBtn');
+        const postContent = document.getElementById('postContent');
+        const textSize = document.getElementById('textSize');
+        const textColor = document.getElementById('textColor');
+        const boldBtn = document.getElementById('boldBtn');
+        const italicBtn = document.getElementById('italicBtn');
+        const underlineBtn = document.getElementById('underlineBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadSection = document.getElementById('downloadSection');
+        const imageSize = document.getElementById('imageSize');
+        const imageDimensions = document.getElementById('imageDimensions');
+        
+        // Preview Elements
+        const previewUserName = document.getElementById('previewUserName');
+        const previewAccountDetails = document.getElementById('previewAccountDetails');
+        const previewPostContent = document.getElementById('previewPostContent');
+        const previewBackground = document.getElementById('previewBackground');
+        const capture = document.getElementById('capture');
+        
+        // Text styles
+        let isBold = false;
+        let isItalic = false;
+        let isUnderline = false;
+        
+        // Update preview when inputs change
+        function updatePreview() {
+            // User info
+            previewUserName.textContent = userName.value;
+            previewAccountDetails.textContent = accountDetails.value;
+            
+            // Text color
+            previewPostContent.style.color = textColor.value;
+            previewUserName.style.color = 'white';
+            previewAccountDetails.style.color = 'white';
+            
+            // Text size
+            previewPostContent.className = '';
+            previewPostContent.classList.add(textSize.value, 'text-center');
+            
+            // Apply text styles
+            if (isBold) previewPostContent.classList.add('font-bold');
+            if (isItalic) previewPostContent.classList.add('italic');
+            if (isUnderline) previewPostContent.classList.add('underline');
+            
+            // Content
+            previewPostContent.textContent = postContent.value;
+        }
+        
+        // Event listeners for inputs
+        userName.addEventListener('input', updatePreview);
+        accountDetails.addEventListener('input', updatePreview);
+        postContent.addEventListener('input', updatePreview);
+        textSize.addEventListener('change', updatePreview);
+        textColor.addEventListener('input', updatePreview);
+        
+        // Handle background image upload
+        backgroundImage.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewBackground.src = event.target.result;
+                    previewBackground.style.filter = 'brightness(100%)';
+                    
+                    // Get image dimensions
+                    const img = new Image();
+                    img.onload = function() {
+                        imageDimensions.textContent = `${this.width}×${this.height}`;
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+        
+        // Remove background image
+        removeBackground.addEventListener('click', function() {
+            previewBackground.src = '';
+            backgroundImage.value = '';
+            imageDimensions.textContent = '500×500';
+        });
+        
+        // Darken background
+        darkenBtn.addEventListener('click', function() {
+            const currentFilter = previewBackground.style.filter || 'brightness(100%)';
+            const currentValue = parseInt(currentFilter.match(/\d+/)[0]);
+            const newValue = Math.max(30, currentValue - 20);
+            previewBackground.style.filter = `brightness(${newValue}%)`;
+        });
+        
+        // Brighten background
+        brightenBtn.addEventListener('click', function() {
+            const currentFilter = previewBackground.style.filter || 'brightness(100%)';
+            const currentValue = parseInt(currentFilter.match(/\d+/)[0]);
+            const newValue = Math.min(150, currentValue + 20);
+            previewBackground.style.filter = `brightness(${newValue}%)`;
+        });
+        
+        // Text style buttons
+        boldBtn.addEventListener('click', function() {
+            isBold = !isBold;
+            this.classList.toggle('bg-blue-100', isBold);
+            this.classList.toggle('dark:bg-blue-900', isBold);
+            updatePreview();
+        });
+        
+        italicBtn.addEventListener('click', function() {
+            isItalic = !isItalic;
+            this.classList.toggle('bg-blue-100', isItalic);
+            this.classList.toggle('dark:bg-blue-900', isItalic);
+            updatePreview();
+        });
+        
+        underlineBtn.addEventListener('click', function() {
+            isUnderline = !isUnderline;
+            this.classList.toggle('bg-blue-100', isUnderline);
+            this.classList.toggle('dark:bg-blue-900', isUnderline);
+            updatePreview();
+        });
+        
+        // Generate image
+        generateBtn.addEventListener('click', () => {
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Génération...';
+            generateBtn.disabled = true;
+            
+            // Add slight delay to allow UI to update
+            setTimeout(() => {
+                html2canvas(capture, {
+                    scale: 2, // Higher quality (2x)
+                    width: 1000, // Fixed width
+                    height: 1000, // Fixed height for square
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null // Transparent background
+                }).then(canvas => {
+                    // Update download button
+                    const dataUrl = canvas.toDataURL('image/png');
+                    downloadBtn.onclick = () => {
+                        const link = document.createElement('a');
+                        link.download = `${previewPostContent.textContent.trim().substring(0, 11)}.png`;
+                        link.href = dataUrl;
+                        link.click();
+                    };
+                    
+                    // Calculate image size
+                    const sizeInBytes = dataUrl.length * 0.75; // Approximate
+                    const sizeInKB = Math.round(sizeInBytes / 1024);
+                    imageSize.textContent = `${sizeInKB} KB`;
+                    
+                    // Update dimensions
+                    imageDimensions.textContent = `${canvas.width}×${canvas.height}`;
+                    
+                    // Show download button
+                    downloadSection.classList.remove('hidden');
+                    
+                    // Scroll to download section
+                    downloadSection.scrollIntoView({ behavior: 'smooth' });
+                    
+                    generateBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Image générée!';
+                    setTimeout(() => {
+                        generateBtn.innerHTML = '<i class="fas fa-magic mr-2"></i> Régénérer l\'image';
+                        generateBtn.disabled = false;
+                    }, 1500);
+                }).catch(err => {
+                    console.error('Erreur lors de la génération:', err);
+                    generateBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Erreur';
+                    generateBtn.disabled = false;
+                });
+            }, 100);
+        });
+        
+        // Initial preview update
+        updatePreview();
+    </script>
+</body>
+</html>

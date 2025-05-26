@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créateur de Posts Personnalisés</title>
+    <link rel="shortcut icon" href="/images//bambyno.PNG" type="image/x-icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script> <!-- HTMX n'est pas utilisé activement ici, peut être retiré si non prévu -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .social-post { width: 500px; height: 500px; position: relative; }
+        
+        .color-picker {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .color-picker:hover { transform: scale(1.1); }
+        .color-picker::-webkit-color-swatch { border-radius: 8px; border: 2px solid rgba(255,255,255,0.5); }
+        .color-picker::-moz-color-swatch { border-radius: 8px; border: 2px solid rgba(255,255,255,0.5); }
+        
+        .custom-file-upload {
+            display: inline-block;
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            border: 1px dashed #d1d5db;
+            transition: all 0.3s;
+        }
+        
+        .custom-file-upload:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .model-card {
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .model-card.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #10b981, #059669);
+            transition: all 0.3s;
+        }
+        
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .post-content {
+            word-break: break-word;
+            overflow-wrap: break-word;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        /* Modèle 1 - Centré */
+        .model-1 .post-overlay {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .model-1 .user-info {
+            background-color: rgba(0,0,0,0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            margin-bottom: 1rem;
+        }
+        
+        /* Modèle 2 - Bas gauche */
+        .model-2 .post-overlay {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-start;
+            text-align: left;
+            padding: 2rem;
+        }
+        
+        .model-2 .user-info {
+            background-color: rgba(0,0,0,0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        /* Modèle 3 - Haut droit */
+        .model-3 .post-overlay {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-end;
+            text-align: right;
+            padding: 2rem;
+        }
+        
+        .model-3 .user-info {
+            background-color: rgba(255,255,255,0.9);
+            color: #000; /* Texte noir pour contraste sur fond clair */
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+         /* Style spécifique pour le texte utilisateur dans le modèle 3 */
+        .model-3-content .user-info p {
+            color: #000 !important; /* Assure que le nom d'utilisateur est noir */
+        }
+        .model-3-content .user-info p.text-gray-300 { /* Cible le détail du compte */
+             color: #4b5563 !important; /* Couleur plus foncée pour les détails */
+        }
+         .model-3-content .post-content { /* Contenu du post modèle 3 */
+            color: #000000 !important; /* Texte noir par défaut, sera écrasé par le color picker */
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.3); /* Ombre plus claire pour texte foncé */
+        }
+        
+        /* Modèle 4 - Split */
+        .model-4 .post-overlay {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100%;
+        }
+        
+        .model-4 .content-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .model-4 .content-right {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .model-4 .user-info {
+            margin-bottom: 1rem;
+        }
+
+
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
+                <i class="fas fa-image mr-2 text-blue-500"></i>Créateur de Posts
+            </h1>
+            <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:inline"></i>
+            </button>
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Configuration Panel -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in">
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-6 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    <i class="fas fa-sliders-h mr-2 text-blue-500"></i>Configuration
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- Modèles Section -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                            <i class="fas fa-th-large mr-2 text-blue-500"></i>Modèles
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="model-card p-3 rounded-lg bg-white dark:bg-gray-600 cursor-pointer" 
+                                 onclick="selectModel(1)" data-model="1">
+                                <div class="h-24 bg-gray-200 dark:bg-gray-500 rounded relative overflow-hidden mb-2">
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                                    </div>
+                                </div>
+                                <p class="text-sm font-medium text-center text-gray-700 dark:text-gray-200">Centré</p>
+                            </div>
+                            <div class="model-card p-3 rounded-lg bg-white dark:bg-gray-600 cursor-pointer" 
+                                 onclick="selectModel(2)" data-model="2">
+                                <div class="h-24 bg-gray-200 dark:bg-gray-500 rounded relative overflow-hidden mb-2">
+                                    <div class="absolute inset-0 flex items-start justify-start p-2">
+                                        <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                                    </div>
+                                </div>
+                                <p class="text-sm font-medium text-center text-gray-700 dark:text-gray-200">Bas gauche</p>
+                            </div>
+                            <div class="model-card p-3 rounded-lg bg-white dark:bg-gray-600 cursor-pointer" 
+                                 onclick="selectModel(3)" data-model="3">
+                                <div class="h-24 bg-gray-200 dark:bg-gray-500 rounded relative overflow-hidden mb-2">
+                                    <div class="absolute inset-0 flex items-start justify-end p-2">
+                                        <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                                    </div>
+                                </div>
+                                <p class="text-sm font-medium text-center text-gray-700 dark:text-gray-200">Haut droit</p>
+                            </div>
+                            <div class="model-card p-3 rounded-lg bg-white dark:bg-gray-600 cursor-pointer" 
+                                 onclick="selectModel(4)" data-model="4">
+                                <div class="h-24 bg-gray-200 dark:bg-gray-500 rounded relative overflow-hidden mb-2">
+                                    <div class="absolute inset-0 grid grid-cols-2">
+                                        <div class="bg-gray-300 dark:bg-gray-400 flex items-center justify-center">
+                                            <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                                        </div>
+                                        <div></div>
+                                    </div>
+                                </div>
+                                <p class="text-sm font-medium text-center text-gray-700 dark:text-gray-200">Split</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Image Section -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                            <i class="fas fa-image mr-2 text-blue-500"></i>Image de fond
+                        </h3>
+                        <div>
+                            <label for="backgroundImage" class="custom-file-upload block text-center text-gray-700 dark:text-gray-200">
+                                <i class="fas fa-upload mr-2"></i>Choisir une image
+                            </label>
+                            <input id="backgroundImage" type="file" accept="image/*" class="hidden">
+                            <div class="mt-2 flex justify-between">
+                                <button id="removeBackground" class="text-sm text-red-500 hover:text-red-700">
+                                    <i class="fas fa-times mr-1"></i>Supprimer
+                                </button>
+                                <button id="darkenBtn" class="text-sm text-blue-500 hover:text-blue-700">
+                                    <i class="fas fa-moon mr-1"></i>Assombrir
+                                </button>
+                                <button id="brightenBtn" class="text-sm text-yellow-500 hover:text-yellow-700">
+                                    <i class="fas fa-sun mr-1"></i>Éclaircir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Section -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                            <i class="fas fa-user-circle mr-2 text-blue-500"></i>Profil
+                        </h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Photo de profil</label>
+                                <label for="profileImage" class="custom-file-upload block text-center text-gray-700 dark:text-gray-200">
+                                    <i class="fas fa-user mr-2"></i>Choisir une image
+                                </label>
+                                <input id="profileImage" type="file" accept="image/*" class="hidden">
+                                <button id="removeProfile" class="text-sm text-red-500 hover:text-red-700 mt-2">
+                                    <i class="fas fa-times mr-1"></i>Supprimer
+                                </button>
+                            </div>
+                            <div>
+                                <label for="userName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom d'utilisateur</label>
+                                <input id="userName" type="text" value="Jean Dupont" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="accountDetails" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Détails</label>
+                                <input id="accountDetails" type="text" value="@jeandupont · 2h" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Section -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                            <i class="fas fa-align-left mr-2 text-blue-500"></i>Contenu
+                        </h3>
+                        <div class="mb-4">
+                            <label for="postContent" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Texte de la publication</label>
+                            <textarea id="postContent" class="w-full h-32 p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white transition-all" placeholder="Écrivez votre message ici...">Découvrez ce magnifique paysage ! 🌄 #nature #voyage</textarea>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="textSize" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Taille du texte</label>
+                                <select id="textSize" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="text-sm">Petit</option>
+                                    <option value="text-base" selected>Normal</option>
+                                    <option value="text-lg">Grand</option>
+                                    <option value="text-xl">Très grand</option>
+                                    <option value="text-2xl">Énorme</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Couleur du texte</label>
+                                <input type="color" id="textColor" value="#ffffff" class="color-picker">
+                            </div>
+
+                                                    <!-- ... après la div pour la Couleur du texte ... -->
+                        <div class="grid grid-cols-1 md:grid-cols-1 gap-4 mt-4">
+                            <div>
+                                <label for="textAlign" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alignement du texte</label>
+                                <select id="textAlign" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="left">Gauche</option>
+                                    <option value="center" selected>Centre</option>
+                                    <option value="right">Droite</option>
+                                    <option value="justify">Justifié</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="fontFamily" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Police</label>
+                                <select id="fontFamily" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="'Roboto', sans-serif" selected>Roboto</option>
+                                    <option value="'Lato', sans-serif">Lato</option>
+                                    <option value="'Montserrat', sans-serif">Montserrat</option>
+                                    <option value="'Arial', sans-serif">Arial</option>
+                                    <option value="'Verdana', sans-serif">Verdana</option>
+                                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- ... avant la div pour Style du texte (gras, italique...) ... -->
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Style du texte</label>
+                            <div class="flex space-x-4">
+                                <button id="boldBtn" class="p-2 border rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 dark:border-gray-600">
+                                    <i class="fas fa-bold"></i>
+                                </button>
+                                <button id="italicBtn" class="p-2 border rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 dark:border-gray-600">
+                                    <i class="fas fa-italic"></i>
+                                </button>
+                                <button id="underlineBtn" class="p-2 border rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 dark:border-gray-600">
+                                    <i class="fas fa-underline"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="generateBtn" class="btn-primary w-full text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-magic mr-2"></i>Générer l'image
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Preview Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in" style="animation-delay: 0.1s">
+                <div class="flex justify-between items-center mb-6 pb-2 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
+                        <i class="fas fa-eye mr-2 text-blue-500"></i>Aperçu
+                    </h2>
+                    <div class="flex items-center space-x-2">
+                        <span id="imageSize" class="text-sm text-gray-500 dark:text-gray-400">0 KB</span>
+                        <span id="imageDimensions" class="text-sm text-gray-500 dark:text-gray-400">500×500</span>
+                    </div>
+                </div>
+                
+                <div id="previewContainer" class="flex flex-col items-center">
+                    <!-- Social Post Template -->
+                    <div id="capture" class="social-post bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md overflow-hidden mb-6 model-1">
+                        <!-- Background Image -->
+                        <img id="previewBackground" src="../images/blanc.webp" alt="Background" class="absolute inset-0 w-full h-full object-cover">
+                        
+                        <!-- L'image de profil ci-dessous est cachée et sert de placeholder si besoin, mais n'est plus utilisée directement pour l'update -->
+                        <img id="hiddenMasterProfileImage" src="../images/user-picture.png" alt="Profile" class="hidden">
+                        
+                        <!-- Overlay with content -->
+                        <div class="post-overlay absolute inset-0">
+                            <!-- Modèle 1 - Centré -->
+                            <div class="model-1-content">
+                                <div class="user-info">
+                                    <div class="flex items-center">
+                                        <img id="previewProfileImg1" class="previewProfile w-10 h-10 rounded-full mr-2 object-cover" src="../images/user-picture.png" alt="Profile">
+                                        <div>
+                                            <p id="previewUserName1" class="text-left font-semibold text-white">Jean Dupont</p>
+                                            <p id="previewAccountDetails1" class="text-left text-xs text-gray-300">@jeandupont · 2h</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p id="previewPostContent1" class="post-content text-white text-center text-base font-normal">
+                                    Découvrez ce magnifique paysage ! 🌄 #nature #voyage
+                                </p>
+                            </div>
+                            
+                            <!-- Modèle 2 - Bas gauche -->
+                            <div class="model-2-content hidden">
+                                <div class="user-info">
+                                    <div class="flex items-center">
+                                        <img id="previewProfileImg2" class="previewProfile w-8 h-8 rounded-full mr-2 object-cover" src="../images/user-picture.png" alt="Profile">
+                                        <div>
+                                            <p id="previewUserName2" class="text-left font-semibold text-white">Jean Dupont</p>
+                                            <p id="previewAccountDetails2" class="text-left text-xs text-gray-300">@jeandupont · 2h</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p id="previewPostContent2" class="post-content text-white text-left text-base font-normal">
+                                    Découvrez ce magnifique paysage ! 🌄 #nature #voyage
+                                </p>
+                            </div>
+                            
+                            <!-- Modèle 3 - Haut droit -->
+                            <div class="model-3-content hidden">
+                                <div class="user-info">
+                                    <div class="flex items-center">
+                                        <img id="previewProfileImg3" class="previewProfile w-8 h-8 rounded-full mr-2 object-cover" src="../images/user-picture.png" alt="Profile">
+                                        <div>
+                                            <p id="previewUserName3" class="text-left font-semibold">Jean Dupont</p> <!-- Couleur gérée par CSS !important -->
+                                            <p id="previewAccountDetails3" class="text-left text-xs text-gray-300">@jeandupont · 2h</p> <!-- Couleur gérée par CSS !important -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <p id="previewPostContent3" class="post-content text-right text-base font-normal"> <!-- Couleur gérée par color picker + !important CSS -->
+                                    Découvrez ce magnifique paysage ! 🌄 #nature #voyage
+                                </p>
+                            </div>
+                            
+                            <!-- Modèle 4 - Split -->
+                            <div class="model-4-content hidden">
+                                <div class="content-left">
+                                    <div class="user-info">
+                                        <div class="flex items-center">
+                                            <img id="previewProfileImg4" class="previewProfile w-12 h-12 rounded-full mr-3 object-cover" src="../images/user-picture.png" alt="Profile">
+                                            <div>
+                                                <p id="previewUserName4" class="font-semibold text-white text-lg">Jean Dupont</p>
+                                                <p id="previewAccountDetails4" class="text-sm text-gray-300">@jeandupont · 2h</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p id="previewPostContent4" class="post-content text-white text-left text-xl font-normal mt-4">
+                                        Découvrez ce magnifique paysage ! 🌄 #nature #voyage
+                                    </p>
+                                </div>
+                                <div class="content-right"></div> <!-- Peut être utilisé pour une image/vidéo dans le futur -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="downloadSection" class="w-full max-w-md hidden">
+                        <button id="downloadBtn" class="btn-download w-full text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-download mr-2"></i>Télécharger l'image
+                        </button>
+                        <div class="text-center text-sm text-gray-500 dark:text-gray-400">
+                            <p><i class="fas fa-info-circle mr-1"></i> L'image sera générée en haute résolution (1000×1000)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            html.setAttribute('data-theme', 'dark');
+        } else {
+            html.setAttribute('data-theme', 'light');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const currentTheme = html.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', currentTheme);
+            html.setAttribute('data-theme', currentTheme);
+        });
+        
+        // Current model
+        let currentModel = 1;
+        
+        // DOM Elements (Inputs)
+        const userNameInput = document.getElementById('userName');
+        const accountDetailsInput = document.getElementById('accountDetails');
+        const backgroundImageInput = document.getElementById('backgroundImage');
+        const profileImageInput = document.getElementById('profileImage');
+        const removeBackgroundBtn = document.getElementById('removeBackground');
+        const removeProfileBtn = document.getElementById('removeProfile');
+        const darkenBtn = document.getElementById('darkenBtn');
+        const brightenBtn = document.getElementById('brightenBtn');
+        const postContentInput = document.getElementById('postContent');
+        const textSizeSelect = document.getElementById('textSize');
+        const textColorInput = document.getElementById('textColor');
+        const boldBtn = document.getElementById('boldBtn');
+        const italicBtn = document.getElementById('italicBtn');
+        const underlineBtn = document.getElementById('underlineBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadSection = document.getElementById('downloadSection');
+        const imageSizeSpan = document.getElementById('imageSize');
+        const imageDimensionsSpan = document.getElementById('imageDimensions');
+
+        const textAlignSelect = document.getElementById('textAlign');
+        const fontFamilySelect = document.getElementById('fontFamily');
+        
+        // Preview Elements (Outputs)
+        const previewBackgroundImg = document.getElementById('previewBackground');
+        const captureDiv = document.getElementById('capture');
+        const hiddenMasterProfileImage = document.getElementById('hiddenMasterProfileImage'); // Pour stocker le chemin de l'image de profil chargée
+
+        // Text styles state
+        let isBold = false;
+        let isItalic = false;
+        let isUnderline = false;
+        
+        // Select model function
+        function selectModel(modelNumber) {
+            currentModel = modelNumber;
+            
+            document.querySelectorAll('.model-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            document.querySelector(`.model-card[data-model="${modelNumber}"]`).classList.add('selected');
+            
+            captureDiv.className = 'social-post bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md overflow-hidden mb-6'; // Reset base classes
+            captureDiv.classList.add(`model-${modelNumber}`);
+            
+            document.querySelectorAll('.model-1-content, .model-2-content, .model-3-content, .model-4-content').forEach(el => {
+                el.classList.add('hidden');
+            });
+            
+            const currentModelContent = document.querySelector(`.model-${modelNumber}-content`);
+            if (currentModelContent) {
+                currentModelContent.classList.remove('hidden');
+            }
+            updatePreview();
+        }
+        
+        function updatePreview() {
+            for (let i = 1; i <= 4; i++) {
+                const modelUserNameEl = document.getElementById(`previewUserName${i}`);
+                const modelAccountDetailsEl = document.getElementById(`previewAccountDetails${i}`);
+                const modelPostContentEl = document.getElementById(`previewPostContent${i}`);
+                // const modelProfileImgEl = document.getElementById(`previewProfileImg${i}`); // Déjà géré par son propre event listener
+
+                if (modelUserNameEl) modelUserNameEl.textContent = userNameInput.value;
+                if (modelAccountDetailsEl) modelAccountDetailsEl.textContent = accountDetailsInput.value;
+                
+                if (modelPostContentEl) {
+                    modelPostContentEl.textContent = postContentInput.value;
+                    
+                    // Gérer la couleur du texte, en tenant compte des spécificités du modèle 3
+                    if (i === 3 && currentModel === 3) { // Appliquer la couleur noire au texte principal du modèle 3 si aucune couleur n'est choisie ou si c'est la couleur par défaut
+                        modelPostContentEl.style.color = textColorInput.value === '#ffffff' ? '#000000' : textColorInput.value;
+                         // Assurer que les infos utilisateur du modèle 3 restent noires/grises
+                        if(modelUserNameEl) modelUserNameEl.style.color = '#000000';
+                        if(modelAccountDetailsEl) modelAccountDetailsEl.style.color = '#4b5563'; // Un gris foncé
+                    } else {
+                        modelPostContentEl.style.color = textColorInput.value;
+                    }
+
+                    // Text size: remove old, add new
+                    const sizeClasses = ['text-sm', 'text-base', 'text-lg', 'text-xl', 'text-2xl'];
+                    sizeClasses.forEach(cls => modelPostContentEl.classList.remove(cls));
+                    modelPostContentEl.classList.add(textSizeSelect.value);
+                    
+                    // Text styles: remove old, add new
+                    modelPostContentEl.classList.toggle('font-bold', isBold);
+                    modelPostContentEl.classList.toggle('italic', isItalic);
+                    modelPostContentEl.classList.toggle('underline', isUnderline);
+
+                    // NOUVEAU: Appliquer l'alignement et la police
+                modelPostContentEl.style.textAlign = textAlignSelect.value;
+                modelPostContentEl.style.fontFamily = fontFamilySelect.value;
+                }
+
+                // Les images de profil sont mises à jour par l'event listener de profileImageInput
+                // if (modelProfileImgEl) {
+                //     modelProfileImgEl.src = hiddenMasterProfileImage.src; // Utiliser l'image chargée
+                // }
+            }
+        }
+        
+        // Event listeners for inputs
+        userNameInput.addEventListener('input', updatePreview);
+        accountDetailsInput.addEventListener('input', updatePreview);
+        postContentInput.addEventListener('input', updatePreview);
+        textSizeSelect.addEventListener('change', updatePreview);
+        textColorInput.addEventListener('input', updatePreview);
+
+        textAlignSelect.addEventListener('change', updatePreview);
+        fontFamilySelect.addEventListener('change', updatePreview);
+        
+        backgroundImageInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewBackgroundImg.src = event.target.result;
+                    previewBackgroundImg.style.filter = 'brightness(100%)'; 
+                    
+                    const img = new Image();
+                    img.onload = function() {
+                        imageDimensionsSpan.textContent = `${this.width}×${this.height}`;
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+        
+        profileImageInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const newProfileSrc = event.target.result;
+                    hiddenMasterProfileImage.src = newProfileSrc; // Stocker pour réutilisation si nécessaire
+                    for (let i = 1; i <= 4; i++) {
+                        const modelProfileImg = document.getElementById(`previewProfileImg${i}`);
+                        if (modelProfileImg) {
+                            modelProfileImg.src = newProfileSrc;
+                        }
+                    }
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+        
+        removeBackgroundBtn.addEventListener('click', function() {
+            previewBackgroundImg.src = '../images/blanc.webp'; // Assurez-vous que ce chemin est correct
+            previewBackgroundImg.style.filter = 'brightness(100%)';
+            backgroundImageInput.value = '';
+            imageDimensionsSpan.textContent = '500×500'; // Ou dimensions réelles de blanc.webp
+        });
+        
+        removeProfileBtn.addEventListener('click', function() {
+            const defaultProfileSrc = '../images/user-picture.png'; // Assurez-vous que ce chemin est correct
+            hiddenMasterProfileImage.src = defaultProfileSrc;
+            for (let i = 1; i <= 4; i++) {
+                const modelProfileImg = document.getElementById(`previewProfileImg${i}`);
+                if (modelProfileImg) {
+                    modelProfileImg.src = defaultProfileSrc;
+                }
+            }
+            profileImageInput.value = '';
+        });
+        
+        darkenBtn.addEventListener('click', function() {
+            const currentFilter = previewBackgroundImg.style.filter || 'brightness(100%)';
+            const currentValueMatch = currentFilter.match(/\d+/);
+            if (currentValueMatch) {
+                const currentValue = parseInt(currentValueMatch[0]);
+                const newValue = Math.max(20, currentValue - 10); // Min 20%, step 10%
+                previewBackgroundImg.style.filter = `brightness(${newValue}%)`;
+            }
+        });
+        
+        brightenBtn.addEventListener('click', function() {
+            const currentFilter = previewBackgroundImg.style.filter || 'brightness(100%)';
+            const currentValueMatch = currentFilter.match(/\d+/);
+            if (currentValueMatch) {
+                const currentValue = parseInt(currentValueMatch[0]);
+                const newValue = Math.min(200, currentValue + 10); // Max 200%, step 10%
+                previewBackgroundImg.style.filter = `brightness(${newValue}%)`;
+            }
+        });
+        
+        boldBtn.addEventListener('click', function() {
+            isBold = !isBold;
+            this.classList.toggle('bg-blue-100', isBold);
+            this.classList.toggle('dark:bg-blue-900', isBold);
+            updatePreview();
+        });
+        
+        italicBtn.addEventListener('click', function() {
+            isItalic = !isItalic;
+            this.classList.toggle('bg-blue-100', isItalic);
+            this.classList.toggle('dark:bg-blue-900', isItalic);
+            updatePreview();
+        });
+        
+        underlineBtn.addEventListener('click', function() {
+            isUnderline = !isUnderline;
+            this.classList.toggle('bg-blue-100', isUnderline);
+            this.classList.toggle('dark:bg-blue-900', isUnderline);
+            updatePreview();
+        });
+        
+        
+                generateBtn.addEventListener('click', () => {
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Génération...';
+            generateBtn.disabled = true;
+            
+            // Optionnel: vérifiez les dimensions réelles du div juste avant la capture
+            // console.log('CaptureDiv dimensions:', captureDiv.offsetWidth, captureDiv.offsetHeight);
+
+            setTimeout(() => {
+                html2canvas(captureDiv, {
+                    scale: 2, // L'élément source (500x500) sera mis à l'échelle par 2 -> 1000x1000
+                    // NE PAS spécifier width et height ici, pour que html2canvas utilise
+                    // les dimensions réelles de captureDiv (500x500) comme base.
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null // Pour la transparence si l'image de fond ne couvre pas tout
+                }).then(canvas => {
+                    // Maintenant, canvas.width devrait être 1000 et canvas.height devrait être 1000
+                    // (500px * scale 2 = 1000px)
+                    const dataUrl = canvas.toDataURL('image/png');
+                    downloadBtn.onclick = () => {
+                        const link = document.createElement('a');
+                        const userNameForFile = userNameInput.value.trim().replace(/\s+/g, '_').substring(0, 15) || 'post';
+                        const fileName = `${userNameForFile}-modele${currentModel}.png`;
+                        link.download = fileName;
+                        link.href = dataUrl;
+                        link.click();
+                    };
+                    
+                    const sizeInBytes = dataUrl.length * (3/4) - (dataUrl.endsWith('==') ? 2 : (dataUrl.endsWith('=') ? 1 : 0));
+                    const sizeInKB = Math.round(sizeInBytes / 1024);
+                    imageSizeSpan.textContent = `${sizeInKB} KB`;
+                    
+                    // Ceci devrait maintenant afficher "1000x1000"
+                    imageDimensionsSpan.textContent = `${canvas.width}×${canvas.height}`; 
+                    
+                    downloadSection.classList.remove('hidden');
+                    downloadSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    
+                    generateBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Image générée!';
+                    setTimeout(() => {
+                        generateBtn.innerHTML = '<i class="fas fa-magic mr-2"></i> Régénérer l\'image';
+                        generateBtn.disabled = false;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Erreur lors de la génération:', err);
+                    generateBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Erreur';
+                    setTimeout(() => {
+                         generateBtn.innerHTML = '<i class="fas fa-magic mr-2"></i> Régénérer l\'image';
+                         generateBtn.disabled = false;
+                    }, 2000);
+                });
+            }, 100);
+        });
+        
+        // Initialize
+        selectModel(1); // Select and update preview for the first model by default
+        updatePreview();  // Initial call to set default values in preview
+
+    </script>
+</body>
+</html>
