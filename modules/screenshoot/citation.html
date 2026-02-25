@@ -72,6 +72,7 @@
   const desc = params.get("desc");
   const content = params.get("content");
   const bg = params.get("bg");
+  const background_class = params.get("background_class");
 
   // 🔹 Appliquer les données
   if (avatar) document.getElementById("preview-avatar").src = decodeURIComponent(avatar);
@@ -79,13 +80,21 @@
   if (name) document.getElementById("preview-name").textContent = name;
   if (desc) document.getElementById("preview-description").textContent = desc;
   if (content) document.getElementById("preview-content").textContent = content;
+  //if (background_class) document.getElementById("preview-content").textContent = content;
 
   // 🔹 Backgrounds prédéfinis
   const backgrounds = {
     sunset: "bg-gradient-to-br from-orange-400 via-red-500 to-purple-600",
     ocean: "bg-gradient-to-br from-blue-400 via-cyan-500 to-teal-600",
     dark: "bg-gradient-to-br from-zinc-800 to-black",
-    forest: "bg-gradient-to-br from-green-500 to-emerald-700"
+    forest: "bg-gradient-to-br from-green-500 to-emerald-700",
+    ocean: 'bg-gradient-to-br from-blue-400 via-indigo-500 to-teal-500' ,
+    emerald : 'bg-gradient-to-br from-emerald-400 to-cyan-500',
+    midnight : 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900',
+    rose : 'bg-gradient-to-br from-rose-400 to-orange-300',
+    aurora : 'bg-gradient-to-br from-green-300 via-blue-500 to-purple-600',
+    minimal : 'bg-zinc-100',
+    dark : 'bg-zinc-900'
   };
 
   const preview = document.getElementById("preview");
