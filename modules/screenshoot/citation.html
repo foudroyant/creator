@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="h-screen overflow-hidden">
+
+<div
+  id="preview"
+  class="h-screen w-screen flex items-center justify-center transition-all duration-500"
+>
+
+  <!-- Carte -->
+  <div
+    class="w-[60vw] h-[60vh]
+           bg-white/90 backdrop-blur-lg
+           border border-white/30
+           shadow-2xl rounded-3xl
+           p-10 flex flex-col justify-between"
+  >
+
+    <!-- Header -->
+    <div class="flex items-center gap-6">
+      <img
+        id="preview-avatar"
+        class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+        src=""
+        alt="Avatar"
+      >
+      <div>
+        <h3 id="preview-name" class="text-2xl font-bold text-zinc-900"></h3>
+        <p id="preview-username" class="text-sm text-zinc-500"></p>
+      </div>
+    </div>
+
+    <!-- Contenu -->
+    <div class="flex-1 flex items-center">
+      <p
+        id="preview-content"
+        class="text-3xl leading-relaxed font-semibold text-zinc-800"
+      ></p>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between pt-6 border-t border-zinc-200">
+      <p
+        id="preview-description"
+        class="text-sm uppercase tracking-widest text-zinc-500 font-medium"
+      ></p>
+
+      <div class="flex gap-2">
+        <div class="w-2 h-2 rounded-full bg-zinc-300"></div>
+        <div class="w-2 h-2 rounded-full bg-zinc-300"></div>
+        <div class="w-2 h-2 rounded-full bg-zinc-300"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // 🔹 Lire les query params
+  const params = new URLSearchParams(window.location.search);
+
+  const avatar = params.get("avatar");
+  const username = params.get("username");
+  const name = params.get("name");
+  const desc = params.get("desc");
+  const content = params.get("content");
+  const bg = params.get("bg");
+
+  // 🔹 Appliquer les données
+  if (avatar) document.getElementById("preview-avatar").src = decodeURIComponent(avatar);
+  if (username) document.getElementById("preview-username").textContent = "@" + username;
+  if (name) document.getElementById("preview-name").textContent = name;
+  if (desc) document.getElementById("preview-description").textContent = desc;
+  if (content) document.getElementById("preview-content").textContent = content;
+
+  // 🔹 Backgrounds prédéfinis
+  const backgrounds = {
+    sunset: "bg-gradient-to-br from-orange-400 via-red-500 to-purple-600",
+    ocean: "bg-gradient-to-br from-blue-400 via-cyan-500 to-teal-600",
+    dark: "bg-gradient-to-br from-zinc-800 to-black",
+    forest: "bg-gradient-to-br from-green-500 to-emerald-700"
+  };
+
+  const preview = document.getElementById("preview");
+  preview.className += " " + (backgrounds[bg] || backgrounds.sunset);
+</script>
+
+</body>
+</html>
