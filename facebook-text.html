@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Post - Text Only</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-screen w-screen m-0 p-0 overflow-hidden bg-gradient-to-br from-blue-400 via-cyan-500 to-teal-600">
+    <div class="h-screen w-screen flex items-center justify-center p-4">
+        <!-- Facebook Post Card -->
+        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full overflow-hidden">
+            
+            <!-- Header -->
+            <div class="flex items-center gap-3 p-4 border-b border-gray-200">
+                <img id="avatar" class="w-12 h-12 rounded-full object-cover" src="https://via.placeholder.com/50" alt="Avatar">
+                <div class="flex-1">
+                    <p id="username" class="font-bold text-gray-900 text-sm">John Doe</p>
+                    <p id="timestamp" class="text-gray-500 text-xs">Il y a 2 heures</p>
+                </div>
+                <button class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.5 1.5H9.5V4H10.5V1.5zM4 10.5V9.5H1.5V10.5H4zm15 0v-1h-2.5v1H19zM10.5 15H9.5v2.5H10.5V15z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content Text -->
+            <div class="p-4">
+                <p id="content" class="text-gray-900 text-base leading-relaxed">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                </p>
+            </div>
+
+            <!-- Stats -->
+            <div class="flex justify-between px-4 py-2 text-gray-500 text-sm border-t border-gray-200">
+                <span id="likes">125 J'aime</span>
+                <span id="comments">23 commentaires</span>
+                <span id="shares">5 partages</span>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-0 px-2 py-2 border-t border-gray-200">
+                <button class="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-gray-100 rounded transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2.293-2.293a1 1 0 00-1.414 0L10 11.414l-6.293-6.293a1 1 0 00-1.414 0L2 7m18 0a2 2 0 01-2 2H4a2 2 0 01-2-2m20 0V5a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V7z"></path>
+                    </svg>
+                    <span class="text-sm font-semibold">J'aime</span>
+                </button>
+                <button class="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-gray-100 rounded transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <span class="text-sm font-semibold">Commenter</span>
+                </button>
+                <button class="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-gray-100 rounded transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span class="text-sm font-semibold">Partager</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        document.getElementById('avatar').src = params.get('avatar') || 'https://via.placeholder.com/50';
+        document.getElementById('username').textContent = params.get('name') || 'John Doe';
+        document.getElementById('timestamp').textContent = params.get('date') || 'Il y a 2 heures';
+        document.getElementById('content').textContent = params.get('content') || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
+        document.getElementById('likes').textContent = (params.get('likes') || '125') + ' J\'aime';
+        document.getElementById('comments').textContent = (params.get('comments') || '23') + ' commentaires';
+        document.getElementById('shares').textContent = (params.get('shares') || '5') + ' partages';
+    </script>
+</body>
+</html>
