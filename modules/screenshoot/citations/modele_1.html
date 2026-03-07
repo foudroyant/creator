@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Citation</title>
+</head>
+<body class="bg-gray-100 m-0 p-0 overflow-hidden">
+    <div id="sections-container"></div>
+
+    <script>
+        function getUrlParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
+        function decodeHtml(html) {
+            const txt = document.createElement('textarea');
+            txt.innerHTML = html;
+            return txt.value;
+        }
+
+        function createSection(index, content) {
+            const section = document.createElement('section');
+            section.id = `section-${index}`;
+            section.className = 'fixed top-0 left-0 w-screen h-screen flex items-center justify-center p-4';
+            section.style.display = 'none';
+
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-lg shadow-2xl max-w-4xl w-full h-full flex flex-col items-center justify-center p-8 overflow-auto';
+
+            if (content) {
+                card.innerHTML = decodeHtml(content);
+            }
+
+            section.appendChild(card);
+            return section;
+        }
+
+        function init() {
+            const codeParam = getUrlParam('code');
+            const sectionParam = getUrlParam('section');
+
+            const container = document.getElementById('sections-container');
+
+            let sections = [];
+            
+            if (codeParam) {
+                const codes = codeParam.split('|||');
+                codes.forEach((code, index) => {
+                    const section = createSection(index + 1, code.trim());
+                    sections.push(section);
+                    container.appendChild(section);
+                });
+            }
+
+            if (sectionParam && sections.length > 0) {
+                const sectionIndex = parseInt(sectionParam) - 1;
+                if (sectionIndex >= 0 && sectionIndex < sections.length) {
+                    sections.forEach((section, index) => {
+                        section.style.display = index === sectionIndex ? 'flex' : 'none';
+                    });
+                }
+            } else if (sections.length > 0) {
+                sections[0].style.display = 'flex';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
